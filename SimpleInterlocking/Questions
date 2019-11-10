@@ -1,0 +1,9 @@
+Questions:
+
+1. For boolean functions, the sources are always registers or literals  can also be there? - Current Assumptions - onl register operands
+2. Expected behaviour for bad input? like bad opcode, bad register numbers, bad literals? - Current Assumptions - ignore the whole instruction and add NOP there
+3. For BZ and BNZ, PC-relative address means that the literal represents the 200th statement from the current statement or 200 bytes from the current byte which then would mean that the actual jump is to the 50th instruction? - In get_code_index the formula is pc-4000/4, therefore it'll be the 50th instruction only.
+4. Negative numbers representations in the command.
+5. Boolean operations are bitwise?
+6. Do the Memory operations complete in 1 cycle always?
+7. Simple interlocking is software interlocking?
