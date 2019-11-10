@@ -40,6 +40,3 @@ How to compile and run
 2) Run using ./apex_sim <input file name>
 
 
-Please contact your TAs for any assistance or query!
-
-
