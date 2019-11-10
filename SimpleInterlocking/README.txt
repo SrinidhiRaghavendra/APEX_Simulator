@@ -6,7 +6,8 @@ A simple implementation of 5 Stage APEX Pipeline
 
 Author :
 ---------------------------------------------------------------------------------
-Gaurav Kothari (gkothar1@binghamton.edu)
+Gaurav Kothari (gkothar1@binghamton.edu) - Skeleton code
+Srinidhi Raghavendra (sraghav2@binghamton.edu) - functionality
 State University of New York, Binghamton
 
 
