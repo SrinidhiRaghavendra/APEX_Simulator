@@ -400,11 +400,6 @@ memory1(APEX_CPU* cpu)
     if (!stage->busy && !stage->stalled && current_ins->stage_finished  < MEM1) {
 
       /* Store */
-      if (strcmp(stage->opcode, "STORE") == 0 || strcmp(stage->opcode, "STR") == 0) {
-        cpu->data_memory[stage->mem_address] = stage->rs1_value;
-      }  else if(strcmp(stage->opcode, "LOAD") == 0 || strcmp(stage->opcode, "LDR") == 0) {
-        stage->buffer = cpu->data_memory[stage->mem_address];
-      }
 
       /* MOVC */
       /*if (strcmp(stage->opcode, "MOVC") == 0) {
@@ -431,6 +426,11 @@ int memory2(APEX_CPU* cpu) {
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(stage->pc)];
     if(!stage->busy && !stage->stalled && current_ins->stage_finished  < MEM2) {
+      if (strcmp(stage->opcode, "STORE") == 0 || strcmp(stage->opcode, "STR") == 0) {
+        cpu->data_memory[stage->mem_address] = stage->rs1_value;
+      }  else if(strcmp(stage->opcode, "LOAD") == 0 || strcmp(stage->opcode, "LDR") == 0) {
+        stage->buffer = cpu->data_memory[stage->mem_address];
+      }
       cpu->stage[WB] = cpu->stage[MEM2];
       current_ins->stage_finished = MEM2;
     }
