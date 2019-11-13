@@ -132,9 +132,9 @@ print_instruction(CPU_Stage* stage)
 static void
 print_stage_content(char* name, CPU_Stage* stage, int is_active)
 {
-  printf("%-15s: ", name);
+  printf("%-15s ", name);
   if(is_active) {
-    printf("pc(%d) ", stage->pc);
+    printf("(I%d: %d) ", get_code_index(stage->pc), stage->pc);
     print_instruction(stage);
   } else {
     printf("EMPTY");
@@ -182,7 +182,7 @@ fetch(APEX_CPU* cpu)
   }
   stage->is_empty = 1;
   if (ENABLE_DEBUG_MESSAGES) {
-      print_stage_content("Fetch", stage, get_code_index(stage->pc) < cpu->code_memory_size);
+      print_stage_content("Instruction at FETCH_____STAGE--->\t", stage, get_code_index(stage->pc) < cpu->code_memory_size);
     }
   return 0;
 }
@@ -275,10 +275,10 @@ decode(APEX_CPU* cpu)
       }
     }
     if (ENABLE_DEBUG_MESSAGES) {
-        print_stage_content("Decode/RF", stage, (current_ins->stage_finished <= DRF && get_code_index(stage->pc) < cpu->code_memory_size));
+        print_stage_content("Instruction at DECODE_RF_STAGE--->\t", stage, (current_ins->stage_finished <= DRF && get_code_index(stage->pc) < cpu->code_memory_size));
       }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Decode/RF", stage, 0);
+    print_stage_content("Instruction at DECODE_RF_STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   return 0;
@@ -345,10 +345,10 @@ execute1(APEX_CPU* cpu)
       current_ins->stage_finished = EX1;
     }
     if (ENABLE_DEBUG_MESSAGES) {
-        print_stage_content("Execute 1", stage, (current_ins->stage_finished <= EX1 && get_code_index(stage->pc) < cpu->code_memory_size));
+        print_stage_content("Instruction at EX1_______STAGE--->\t", stage, (current_ins->stage_finished <= EX1 && get_code_index(stage->pc) < cpu->code_memory_size));
     }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Execute 1", stage, 0);
+    print_stage_content("Instruction at EX1_______STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   return 0;
@@ -378,10 +378,10 @@ int execute2(APEX_CPU* cpu) {
       current_ins->stage_finished = EX2;
     }
     if (ENABLE_DEBUG_MESSAGES) {
-      print_stage_content("Execute 2", stage, (current_ins->stage_finished <= EX2 && get_code_index(stage->pc) < cpu->code_memory_size));
+      print_stage_content("Instruction at EX2_______STAGE--->\t", stage, (current_ins->stage_finished <= EX2 && get_code_index(stage->pc) < cpu->code_memory_size));
     }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Execute 2", stage, 0);
+    print_stage_content("Instruction at EX2_______STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   return 0;
@@ -415,10 +415,10 @@ memory1(APEX_CPU* cpu)
       current_ins->stage_finished = MEM1;
     }
     if (ENABLE_DEBUG_MESSAGES) {
-        print_stage_content("Memory 1", stage, (current_ins->stage_finished <= MEM1 && get_code_index(stage->pc) < cpu->code_memory_size));
+        print_stage_content("Instruction at MEMORY1___STAGE--->\t", stage, (current_ins->stage_finished <= MEM1 && get_code_index(stage->pc) < cpu->code_memory_size));
       }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Memory 1", stage, 0);
+    print_stage_content("Instruction at MEMORY1___STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   stage->pc = 0;
@@ -443,10 +443,10 @@ int memory2(APEX_CPU* cpu) {
       current_ins->stage_finished = MEM2;
     }
     if (ENABLE_DEBUG_MESSAGES) {
-        print_stage_content("Memory2", stage, (current_ins->stage_finished <= MEM2 && get_code_index(stage->pc) < cpu->code_memory_size));
+        print_stage_content("Instruction at MEMORY2___STAGE--->\t", stage, (current_ins->stage_finished <= MEM2 && get_code_index(stage->pc) < cpu->code_memory_size));
       }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Memory 2", stage, 0);
+    print_stage_content("Instruction at MEMORY2___STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   stage->pc = 0;
@@ -478,7 +478,7 @@ writeback(APEX_CPU* cpu)
         cpu->regs[CC] = (stage->buffer == 0);
       }
       else if(strcmp(stage->opcode, "HALT") == 0 && ENABLE_DEBUG_MESSAGES) {
-        print_stage_content("Writeback", stage, 1);
+        print_stage_content("Instruction at WRITEBACK_STAGE--->\t", stage, 1);
         return 1;
       }
       current_ins->stage_finished = WB;
@@ -489,10 +489,10 @@ writeback(APEX_CPU* cpu)
       return 2;
     }
     if (ENABLE_DEBUG_MESSAGES) {
-      print_stage_content("Writeback", stage, (stage_executed && get_code_index(stage->pc) < cpu->code_memory_size));
+      print_stage_content("Instruction at WRITEBACK_STAGE--->\t", stage, (stage_executed && get_code_index(stage->pc) < cpu->code_memory_size));
     }
   } else if (ENABLE_DEBUG_MESSAGES) {
-    print_stage_content("Writeback", stage, 0);
+    print_stage_content("Instruction at WRITEBACK_STAGE--->\t", stage, 0);
   }
   stage->is_empty = 1;
   stage->pc = 0;
