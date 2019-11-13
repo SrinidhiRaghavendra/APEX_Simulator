@@ -537,7 +537,7 @@ APEX_cpu_run(APEX_CPU* cpu, int no_of_cycles, int flag)
 
     if (ENABLE_DEBUG_MESSAGES) {
       printf("--------------------------------\n");
-      printf("Clock Cycle #: %d\n", cpu->clock);
+      printf("Clock Cycle #: %d\n", cpu->clock+1);
       printf("--------------------------------\n");
     }
 
