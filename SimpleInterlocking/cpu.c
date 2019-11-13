@@ -300,7 +300,7 @@ execute1(APEX_CPU* cpu)
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(stage->pc)];
     if (!stage->busy && !stage->stalled && current_ins->stage_finished  < EX1) {
-      if(stage->rd && stage->rd < 16 && stage->rd >= 0) {
+      if(stage->rd < 16 && stage->rd >= 0) {
         cpu->regs_valid[stage->rd] = 0;
       }
       /* Store */
@@ -360,6 +360,9 @@ int execute2(APEX_CPU* cpu) {
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = (&cpu->code_memory[get_code_index(stage->pc)]);
     if(!stage->busy && !stage->stalled && current_ins->stage_finished  < EX2) {
+      if(stage->rd < 16 && stage->rd >= 0) {
+        cpu->regs_valid[stage->rd] = 0;
+      }
       if((strcmp(stage->opcode, "BZ") == 0 && cpu->regs[CC] == 1) || (strcmp(stage->opcode, "BNZ") == 0 && cpu->regs[CC] == 0)) {
         //Flush out the contents of F, DRF and EX1 stages, calculate the new address to jump to using pc-relative addressing
         //new pc value to fetch = old pc value + stage->imm
@@ -398,7 +401,9 @@ memory1(APEX_CPU* cpu)
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(stage->pc)];
     if (!stage->busy && !stage->stalled && current_ins->stage_finished  < MEM1) {
-
+      if(stage->rd < 16 && stage->rd >= 0) {
+        cpu->regs_valid[stage->rd] = 0;
+      }
       /* Store */
 
       /* MOVC */
@@ -426,6 +431,9 @@ int memory2(APEX_CPU* cpu) {
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(stage->pc)];
     if(!stage->busy && !stage->stalled && current_ins->stage_finished  < MEM2) {
+      if(stage->rd < 16 && stage->rd >= 0) {
+        cpu->regs_valid[stage->rd] = 0;
+      }
       if (strcmp(stage->opcode, "STORE") == 0 || strcmp(stage->opcode, "STR") == 0) {
         cpu->data_memory[stage->mem_address] = stage->rs1_value;
       }  else if(strcmp(stage->opcode, "LOAD") == 0 || strcmp(stage->opcode, "LDR") == 0) {
@@ -459,7 +467,7 @@ writeback(APEX_CPU* cpu)
   if(stage->pc >= 4000) {
     APEX_Instruction* current_ins = &cpu->code_memory[get_code_index(stage->pc)];
     if (!stage->busy && !stage->stalled && current_ins->stage_finished  < WB) {
-      if(stage->rd) {
+      if(stage->rd < 16 && stage->rd >= 0) {
         cpu->regs_valid[stage->rd] = 1;
       }
       /* Update register file */
@@ -477,11 +485,11 @@ writeback(APEX_CPU* cpu)
       stage_executed = 1;
       cpu->ins_completed++;
     }
+    if(get_code_index(stage->pc) == cpu->code_memory_size) {
+      return 2;
+    }
     if (ENABLE_DEBUG_MESSAGES) {
       print_stage_content("Writeback", stage, (stage_executed && get_code_index(stage->pc) < cpu->code_memory_size));
-    }
-    if(get_code_index(stage->pc) == cpu->code_memory_size) {
-      return 1;
     }
   } else if (ENABLE_DEBUG_MESSAGES) {
     print_stage_content("Writeback", stage, 0);
@@ -534,6 +542,9 @@ APEX_cpu_run(APEX_CPU* cpu, int no_of_cycles, int flag)
     }
 
     int writeback_result = writeback(cpu);
+    if(writeback_result == 2) {
+      break;
+    }
     memory2(cpu);
     memory1(cpu);
     execute2(cpu);
