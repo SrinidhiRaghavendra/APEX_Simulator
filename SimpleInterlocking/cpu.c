@@ -367,10 +367,14 @@ int execute2(APEX_CPU* cpu) {
         //Flush out the contents of F, DRF and EX1 stages, calculate the new address to jump to using pc-relative addressing
         //new pc value to fetch = old pc value + stage->imm
         flush_and_reload_pc = stage->pc + stage->imm;
+        int ins_index = get_code_index(flush_and_reload_pc);
+        assert(flush_and_reload_pc % 4 == 0 && ins_index < cpu->code_memory_size && ins_index >= 0);
       } else if(strcmp(stage->opcode, "JUMP") == 0) {
         //Flush out the contents of F, DRF and EX1 stages, the new address to jump to is already calculated in the previous stage
         //new pc value to fetch = stage->buffer
         flush_and_reload_pc = stage->buffer;
+        int ins_index = get_code_index(flush_and_reload_pc);
+        assert(flush_and_reload_pc % 4 == 0 && ins_index < cpu->code_memory_size && ins_index >= 0);
       } else if(strcmp(stage->opcode, "HALT") == 0 && halt_and_flush == 0) {
         halt_and_flush = 2;
       }

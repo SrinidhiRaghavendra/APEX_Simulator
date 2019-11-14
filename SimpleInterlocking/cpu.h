@@ -1,3 +1,4 @@
+#include<assert.h>
 #ifndef _APEX_CPU_H_
 #define _APEX_CPU_H_
 #define CC 16
