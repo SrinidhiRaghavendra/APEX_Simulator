@@ -167,7 +167,6 @@ fetch(APEX_CPU* cpu)
     stage->rs2 = current_ins->rs2;
     stage->rs3 = current_ins->rs3;
     stage->imm = current_ins->imm;
-    stage->rd = current_ins->rd;
 
     /* Update PC for next instruction */
 
