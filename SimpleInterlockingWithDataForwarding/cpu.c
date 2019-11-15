@@ -357,27 +357,14 @@ decode(APEX_CPU* cpu)
       } else if (strcmp(stage->opcode, "BZ") == 0 || strcmp(stage->opcode, "BNZ") == 0) {
         stage->buffer = -1;
         CPU_Stage* ex1_stage = &cpu->stage[EX1];
-        if(cpu->forwarding_lines_data[3] != -1 && ((&cpu->code_memory[get_code_index((&cpu->stage[EX1])->pc)])->stage_finished <= EX1 && !(strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0))) {
-          stage->buffer = cpu->forwarding_lines_data[3];
-        } else if(!ex1_stage->is_empty && (strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0)) {
-          is_stage_stalled = 1;
-        }
         CPU_Stage* ex2_stage = &cpu->stage[EX2];
-        if(!is_stage_stalled && !ex2_stage->is_empty && (strcmp(ex2_stage->opcode, "ADD") == 0 || strcmp(ex2_stage->opcode, "ADDL") == 0 || strcmp(ex2_stage->opcode, "SUB") == 0 || strcmp(ex2_stage->opcode, "SUBL") == 0 || strcmp(ex2_stage->opcode, "MUL") == 0)) {
-            is_stage_stalled = 1;
-        }
-        CPU_Stage* mem1_stage = &cpu->stage[MEM1];
-        if(!is_stage_stalled && !mem1_stage->is_empty && (strcmp(mem1_stage->opcode, "ADD") == 0 || strcmp(mem1_stage->opcode, "ADDL") == 0 || strcmp(mem1_stage->opcode, "SUB") == 0 || strcmp(mem1_stage->opcode, "SUBL") == 0 || strcmp(mem1_stage->opcode, "MUL") == 0)) {
-            is_stage_stalled = 1;
-        }
-        CPU_Stage* mem2_stage = &cpu->stage[MEM2];
-        if(!is_stage_stalled && !mem2_stage->is_empty && (strcmp(mem2_stage->opcode, "ADD") == 0 || strcmp(mem2_stage->opcode, "ADDL") == 0 || strcmp(mem2_stage->opcode, "SUB") == 0 || strcmp(mem2_stage->opcode, "SUBL") == 0 || strcmp(mem2_stage->opcode, "MUL") == 0)) {
-            is_stage_stalled = 1;
-        }
-        CPU_Stage* wb_stage = &cpu->stage[WB];
-        if(!is_stage_stalled && !wb_stage->is_empty && (strcmp(wb_stage->opcode, "ADD") == 0 || strcmp(wb_stage->opcode, "ADDL") == 0 || strcmp(wb_stage->opcode, "SUB") == 0 || strcmp(wb_stage->opcode, "SUBL") == 0 || strcmp(wb_stage->opcode, "MUL") == 0)) {
-            is_stage_stalled = 1;
-        }
+        if(!(strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0)) {
+          if(cpu->forwarding_lines_data[3] != -1) {
+            stage->buffer = cpu->forwarding_lines_data[3];
+          }
+        } else {
+          is_stage_stalled = 1;
+        } 
       } else if (strcmp(stage->opcode, "HALT") == 0) {
         halt_and_flush = 1;
         CPU_Stage* ex1_stage = &cpu->stage[EX2];//Since the ex2 stage contents will be moved to mem1 as part ex1 is executed before drf
