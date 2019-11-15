@@ -280,15 +280,12 @@ decode(APEX_CPU* cpu)
       } else if (strcmp(stage->opcode, "ADD") == 0 || strcmp(stage->opcode, "SUB") == 0 ||  strcmp(stage->opcode, "MUL") == 0 ||
    strcmp(stage->opcode, "AND") == 0 || strcmp(stage->opcode, "OR") == 0 || strcmp(stage->opcode, "EX-OR") == 0 || strcmp(stage->opcode, "LDR") == 0 || strcmp(stage->opcode, "STORE") == 0) {
         if(cpu->regs_valid[stage->rs1] && cpu->regs_valid[stage->rs2]) {
-          printf("Both are valid\n");
           stage->rs1_value = cpu->regs[stage->rs1];
           stage->rs2_value = cpu->regs[stage->rs2];
         } else {
           if(cpu->regs_valid[stage->rs1]) {
-            printf("RS1 valid\n");
             stage->rs1_value = cpu->regs[stage->rs1];
           } else if((&cpu->stage[EX1])->rd == stage->rs1 && (&cpu->code_memory[get_code_index((&cpu->stage[EX1])->pc)])->stage_finished <= EX1) {
-            printf("RS1 dependent on ins in EX1 \n");
             is_stage_stalled = 1;
           } else if(cpu->forwarding_lines_register_address[EX2-3] == stage->rs1) {
             if((&cpu->code_memory[get_code_index((&cpu->stage[EX2])->pc)])->stage_finished <= MEM1 && (strcmp((&cpu->stage[EX2])->opcode, "LDR") == 0 || strcmp((&cpu->stage[EX2])->opcode, "LOAD") == 0)) {
@@ -360,10 +357,26 @@ decode(APEX_CPU* cpu)
       } else if (strcmp(stage->opcode, "BZ") == 0 || strcmp(stage->opcode, "BNZ") == 0) {
         stage->buffer = -1;
         CPU_Stage* ex1_stage = &cpu->stage[EX1];
-        if(cpu->forwarding_lines_data[3] != -1 && !(strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0)) {
+        if(cpu->forwarding_lines_data[3] != -1 && ((&cpu->code_memory[get_code_index((&cpu->stage[EX1])->pc)])->stage_finished <= EX1 && !(strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0))) {
           stage->buffer = cpu->forwarding_lines_data[3];
-        } else {
+        } else if(!ex1_stage->is_empty && (strcmp(ex1_stage->opcode, "ADD") == 0 || strcmp(ex1_stage->opcode, "ADDL") == 0 || strcmp(ex1_stage->opcode, "SUB") == 0 || strcmp(ex1_stage->opcode, "SUBL") == 0 || strcmp(ex1_stage->opcode, "MUL") == 0)) {
           is_stage_stalled = 1;
+        }
+        CPU_Stage* ex2_stage = &cpu->stage[EX2];
+        if(!is_stage_stalled && !ex2_stage->is_empty && (strcmp(ex2_stage->opcode, "ADD") == 0 || strcmp(ex2_stage->opcode, "ADDL") == 0 || strcmp(ex2_stage->opcode, "SUB") == 0 || strcmp(ex2_stage->opcode, "SUBL") == 0 || strcmp(ex2_stage->opcode, "MUL") == 0)) {
+            is_stage_stalled = 1;
+        }
+        CPU_Stage* mem1_stage = &cpu->stage[MEM1];
+        if(!is_stage_stalled && !mem1_stage->is_empty && (strcmp(mem1_stage->opcode, "ADD") == 0 || strcmp(mem1_stage->opcode, "ADDL") == 0 || strcmp(mem1_stage->opcode, "SUB") == 0 || strcmp(mem1_stage->opcode, "SUBL") == 0 || strcmp(mem1_stage->opcode, "MUL") == 0)) {
+            is_stage_stalled = 1;
+        }
+        CPU_Stage* mem2_stage = &cpu->stage[MEM2];
+        if(!is_stage_stalled && !mem2_stage->is_empty && (strcmp(mem2_stage->opcode, "ADD") == 0 || strcmp(mem2_stage->opcode, "ADDL") == 0 || strcmp(mem2_stage->opcode, "SUB") == 0 || strcmp(mem2_stage->opcode, "SUBL") == 0 || strcmp(mem2_stage->opcode, "MUL") == 0)) {
+            is_stage_stalled = 1;
+        }
+        CPU_Stage* wb_stage = &cpu->stage[WB];
+        if(!is_stage_stalled && !wb_stage->is_empty && (strcmp(wb_stage->opcode, "ADD") == 0 || strcmp(wb_stage->opcode, "ADDL") == 0 || strcmp(wb_stage->opcode, "SUB") == 0 || strcmp(wb_stage->opcode, "SUBL") == 0 || strcmp(wb_stage->opcode, "MUL") == 0)) {
+            is_stage_stalled = 1;
         }
       } else if (strcmp(stage->opcode, "HALT") == 0) {
         halt_and_flush = 1;
@@ -507,7 +520,7 @@ int execute2(APEX_CPU* cpu) {
       } else if(strcmp(stage->opcode, "HALT") == 0 && halt_and_flush == 0) {
         halt_and_flush = 2;
       } else if (strcmp(stage->opcode, "STR") == 0 || strcmp(stage->opcode, "STORE") == 0 || strcmp(stage->opcode, "LDR") == 0 || strcmp(stage->opcode, "LOAD") == 0) {
-        assert(stage->mem_address >= 0 && stage->mem_address < 999)
+        assert(stage->mem_address >= 0 && stage->mem_address < 999);
       }
       cpu->stage[MEM1] = cpu->stage[EX2];
       current_ins->stage_finished = EX2;
@@ -560,6 +573,9 @@ memory1(APEX_CPU* cpu)
       cpu->forwarding_lines_register_address[MEM1-3] = stage->rd;
       cpu->forwarding_lines_data[MEM1-3] = stage->buffer;
     }
+    if(strcmp(stage->opcode, "ADD") == 0 || strcmp(stage->opcode, "ADDL") == 0 || strcmp(stage->opcode, "SUB") == 0 || strcmp(stage->opcode, "SUBL") == 0 || strcmp(stage->opcode, "MUL") == 0) {
+      cpu->forwarding_lines_data[3] = (stage->buffer == 0);
+    }
   } else if (ENABLE_DEBUG_MESSAGES) {
     print_stage_content("Instruction at MEMORY1___STAGE--->\t", stage, 0);
   }
@@ -591,6 +607,9 @@ int memory2(APEX_CPU* cpu) {
     if(stage->rd < 16 && stage->rd >= 0) {
       cpu->forwarding_lines_register_address[MEM2-3] = stage->rd;
       cpu->forwarding_lines_data[MEM2-3] = stage->buffer;
+    }
+    if(strcmp(stage->opcode, "ADD") == 0 || strcmp(stage->opcode, "ADDL") == 0 || strcmp(stage->opcode, "SUB") == 0 || strcmp(stage->opcode, "SUBL") == 0 || strcmp(stage->opcode, "MUL") == 0) {
+      cpu->forwarding_lines_data[3] = (stage->buffer == 0);
     }
   } else if (ENABLE_DEBUG_MESSAGES) {
     print_stage_content("Instruction at MEMORY2___STAGE--->\t", stage, 0);
