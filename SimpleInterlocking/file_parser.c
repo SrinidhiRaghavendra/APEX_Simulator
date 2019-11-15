@@ -97,7 +97,7 @@ create_APEX_instruction(APEX_Instruction* ins, char* buffer)
     ins->rs1 = get_num_from_string(tokens[1]);
     ins->imm = get_num_from_string(tokens[2]);
   }
-  else if (strcmp(ins->opcode, "HALT\n") == 0) {
+  else if (strcmp(ins->opcode, "HALT\n") == 0 || strcmp(ins->opcode, "HALT") == 0) {
     strcpy(ins->opcode, "HALT");
     //No register reading needed as it is like a termination statment
   }

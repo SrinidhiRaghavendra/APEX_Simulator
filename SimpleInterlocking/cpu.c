@@ -557,6 +557,8 @@ APEX_cpu_run(APEX_CPU* cpu, int no_of_cycles, int flag)
     if(flush_and_reload_pc) {
       cpu->pc = flush_and_reload_pc;
       (&cpu->stage[EX2])->pc = (&cpu->stage[EX1])->pc = (&cpu->stage[DRF])->pc = (&cpu->stage[F])->pc = 0;
+      cpu->regs_valid[(&cpu->stage[EX2])->rd] = 1;
+      cpu->regs_valid[(&cpu->stage[EX1])->rd] = 1;
       flush_and_reload_pc = 0;
     }
     if(halt_and_flush) {
@@ -564,6 +566,8 @@ APEX_cpu_run(APEX_CPU* cpu, int no_of_cycles, int flag)
       (&cpu->stage[DRF])->pc = (&cpu->stage[F])->pc = 0;
       if(halt_and_flush > 1) {
         (&cpu->stage[EX2])->pc = (&cpu->stage[EX1])->pc = 0;
+        cpu->regs_valid[(&cpu->stage[EX2])->rd] = 1;
+        cpu->regs_valid[(&cpu->stage[EX1])->rd] = 1;
       }
     }
     if(writeback_result) {
