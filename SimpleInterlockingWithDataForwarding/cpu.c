@@ -506,6 +506,8 @@ int execute2(APEX_CPU* cpu) {
         assert(flush_and_reload_pc % 4 == 0 && ins_index < cpu->code_memory_size && ins_index >= 0);
       } else if(strcmp(stage->opcode, "HALT") == 0 && halt_and_flush == 0) {
         halt_and_flush = 2;
+      } else if (strcmp(stage->opcode, "STR") == 0 || strcmp(stage->opcode, "STORE") == 0 || strcmp(stage->opcode, "LDR") == 0 || strcmp(stage->opcode, "LOAD") == 0) {
+        assert(stage->mem_address >= 0 && stage->mem_address < 999)
       }
       cpu->stage[MEM1] = cpu->stage[EX2];
       current_ins->stage_finished = EX2;
