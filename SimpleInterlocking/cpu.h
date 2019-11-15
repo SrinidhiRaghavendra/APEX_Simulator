@@ -69,14 +69,14 @@ typedef struct APEX_CPU
   int regs_valid[17];//17th register is the condition code flag - right now used only for the Z flag
 
   /* Array of 7 CPU_stage */
-  CPU_Stage stage[7];
+  CPU_Stage stage[NUM_STAGES];
 
   /* Code Memory where instructions are stored */
   APEX_Instruction* code_memory;
   int code_memory_size;
 
   /* Data Memory */
-  int data_memory[1000];
+  int data_memory[4000];
 
   /* Some stats */
   int ins_completed;
